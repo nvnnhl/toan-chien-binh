@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Toán chiến binh</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap">
+<style>
+:root{--bg:#fff6dc;--panel:#ffffff;--ink:#2a2350;--mute:#6d6890;--acc:#ff9f1c;--ok:#1fa971;--bad:#e5484d;--line:#e8dcb8;--sky1:#8fd3ff;--sky2:#e6f6ff;--ground:#7ccf7a;--ground2:#5bb35f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171436;--panel:#241f4f;--ink:#fff3d1;--mute:#b3aedb;--acc:#ffcf33;--ok:#3ddc97;--bad:#ff6b6b;--line:#3a346e;--sky1:#1d1a5c;--sky2:#4a3f9a;--ground:#2f5d4a;--ground2:#254b3b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171436;--panel:#241f4f;--ink:#fff3d1;--mute:#b3aedb;--acc:#ffcf33;--ok:#3ddc97;--bad:#ff6b6b;--line:#3a346e;--sky1:#1d1a5c;--sky2:#4a3f9a;--ground:#2f5d4a;--ground2:#254b3b;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Baloo 2",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:18px}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.btn{font-weight:800;font-size:1.5rem;padding:12px 40px;border-radius:999px;border:0;background:var(--acc);color:#2a2350;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+.btn.ghost{background:transparent;border:2px solid var(--line);color:var(--ink);box-shadow:none;font-size:1rem;padding:6px 16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-weight:700;min-width:46px;padding:5px 14px;border-radius:999px;border:2px solid var(--line);background:transparent}
+.chip[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:#2a2350}
+.ic{width:44px;height:44px;border-radius:50%;border:3px solid var(--line);background:var(--panel);font-size:1.2rem;display:grid;place-items:center;padding:0}
+
+/* màn mở đầu */
+#splash{min-height:100%;display:flex;flex-direction:column;align-items:center;padding:18px 14px 30px;background:linear-gradient(var(--sky1),var(--sky2) 55%,var(--ground) 55%)}
+.banner{margin-top:4vh;text-align:center;background:var(--panel);border:4px solid var(--acc);border-radius:24px;padding:14px 28px;box-shadow:0 6px 0 rgba(0,0,0,.15)}
+.banner h1{margin:0;font-size:clamp(2rem,8vw,3.4rem);line-height:1.05;font-weight:800}
+.banner p{margin:4px 0 0;color:var(--mute);font-weight:700}
+.parade{display:flex;gap:6vw;align-items:flex-end;margin:16px 0 8px;font-size:clamp(4rem,18vw,6.5rem)}
+.set{width:100%;max-width:520px;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:6px 14px 14px;margin-top:18px}
+.set h2{font-size:1.02rem;margin:12px 0 6px}
+.hero-pick{display:flex;gap:12px;align-items:center}
+.names{display:flex;gap:8px}
+.names input{flex:1;min-width:0;font:inherit;font-weight:700;padding:8px 12px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+.nm{display:block;font-size:.95rem;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#enemyEm{width:100%;height:100%;display:grid;place-items:center}
+#enemyEm .face{transform:scaleX(-1)}
+.tmr{display:none;position:relative;height:22px;margin:6px auto 0;width:100%;max-width:420px;border-radius:12px;background:var(--line);border:2px solid var(--ink);overflow:hidden}
+.tmr i{display:block;height:100%;width:100%;background:var(--acc);transition:width .2s linear}
+.tmr span{position:absolute;inset:0;display:grid;place-items:center;font-size:.85rem;font-weight:800;color:#2a2350}
+.tmr.low i{background:var(--bad)}
+.face{width:56px;height:56px;border-radius:50%;background:var(--sky2) center/cover no-repeat;border:3px solid var(--acc);display:grid;place-items:center;font-size:2rem;flex:none;overflow:hidden}
+.face.big{width:76px;height:76px;font-size:2.8rem}
+.mutebtn{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:10px;z-index:6}
+#splash .msg{font-weight:700;color:var(--bad);min-height:1.4em}
+
+/* màn đánh nhau */
+#game{display:none;height:100%;max-width:900px;margin:0 auto;flex-direction:column;padding:8px 10px 10px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.side{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.side.r{flex-direction:row-reverse}
+.hpw{flex:1;min-width:0}
+.bar{height:18px;border-radius:10px;background:var(--line);border:2px solid var(--ink);overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--ok);transition:width .4s}
+.bar.e i{background:var(--bad);margin-left:auto}
+.hpw span{font-size:.85rem;font-weight:700;color:var(--mute)}
+.side.r .hpw{text-align:right}
+.ctrl{display:flex;gap:6px}
+.qbox{margin:8px auto 0;background:var(--panel);border:4px solid var(--acc);border-radius:20px;padding:4px 26px;font-size:clamp(1.6rem,7.5vw,2.8rem);font-weight:800;text-align:center;max-width:100%;overflow-wrap:anywhere;box-shadow:0 5px 0 rgba(0,0,0,.15)}
+.arena{position:relative;flex:1;min-height:210px;margin:8px 0;border-radius:20px;border:3px solid var(--line);overflow:hidden;background:linear-gradient(var(--sky1),var(--sky2) 70%,var(--ground) 70%)}
+.arena::after{content:"";position:absolute;left:0;right:0;bottom:0;height:12%;background:var(--ground2)}
+.fighter{position:absolute;bottom:14%;width:clamp(120px,32vw,210px);aspect-ratio:1;display:grid;place-items:center;font-size:clamp(5.6rem,24vw,10.5rem);transition:transform .25s;z-index:2}
+.fighter .face{width:100%;height:100%;font-size:inherit;border-width:5px}
+#hero{left:8%}
+#enemy{right:8%;transform:scaleX(-1)}
+#hero.atk{transform:translateX(var(--dx,120px))}
+#enemy.atk{transform:translateX(var(--dx,-120px)) scaleX(-1)}
+.slash{position:absolute;width:100px;height:9px;border-radius:6px;background:#fff;box-shadow:0 0 16px var(--acc),0 0 5px #fff;rotate:-35deg;opacity:0;z-index:4;pointer-events:none}
+.slash::after{content:"";position:absolute;inset:0;border-radius:6px;background:#fff;rotate:70deg}
+.slash.go{animation:slash .4s}
+.dmg{position:absolute;inset:0;pointer-events:none;border-radius:50%}
+.dmg.l3,.dmg.l4{box-shadow:inset 0 0 22px rgba(120,30,90,.5)}
+.dmg .m{position:absolute;display:block;border-radius:50%}
+.dmg .red{left:16%;top:52%;width:24%;height:18%;background:radial-gradient(#e5484dcc,transparent 70%)}
+.dmg .pur{right:14%;top:50%;width:30%;height:24%;background:radial-gradient(#6b2fa0dd,#8a3a7a66 55%,transparent 75%)}
+.dmg .bump{left:36%;top:4%;width:28%;height:22%;background:radial-gradient(circle at 35% 30%,#ffd5c9,#ff8f7a 60%,#d9534f);box-shadow:0 3px 6px rgba(0,0,0,.35)}
+.dmg .eye{top:32%;width:30%;height:22%;background:radial-gradient(#2b1140,#4a1d6e 55%,transparent 80%)}
+.dmg .eye.l{left:18%}
+.dmg .eye.r{right:18%}
+.dmg .plas{left:50%;top:64%;width:32%;height:11%;border-radius:3px;background:#f2d2a9;border:1px solid #c9a06c;rotate:-25deg}
+.dmg .swell{left:6%;top:46%;width:36%;height:32%;background:radial-gradient(circle at 35% 30%,#ffc2b8,#d9534f99 65%,transparent 82%);box-shadow:0 4px 8px rgba(0,0,0,.3)}
+.dmg .stars{left:28%;top:-14%;width:auto;height:auto;border-radius:0;font-size:.36em;line-height:1;animation:spin 1.2s linear infinite}
+@keyframes spin{to{rotate:360deg}}
+@keyframes slash{0%{opacity:1;scale:0 1}55%{opacity:1;scale:1 1}100%{opacity:0;scale:1.25 1}}
+#hero.hit,#enemy.hit{animation:shake .4s;filter:drop-shadow(0 0 12px var(--bad))}
+#hero.dead{transform:rotate(80deg) translateY(30px);opacity:.5;transition:all .6s}
+#enemy.dead{transform:scaleX(-1) rotate(80deg) translateY(30px);opacity:.5;transition:all .6s}
+@keyframes shake{0%,100%{translate:0}25%{translate:-8px}75%{translate:8px}}
+.pop{position:absolute;top:22%;left:50%;translate:-50% 0;font-weight:800;font-size:2.4rem;color:var(--bad);opacity:0;pointer-events:none;z-index:3;-webkit-text-stroke:2px #fff}
+.pop.go{animation:pop .8s}
+@keyframes pop{0%{opacity:1;transform:translateY(0) scale(1.3)}100%{opacity:0;transform:translateY(-40px)}}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.opt{font-weight:800;font-size:1.6rem;padding:10px;border-radius:16px;border:3px solid var(--line);background:var(--panel);display:flex;gap:10px;align-items:center;justify-content:center;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.opt small{font-size:.95rem;color:var(--mute);font-weight:800}
+.opt.ok{background:var(--ok);border-color:var(--ok);color:#102}
+.opt.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.typed{display:none;gap:10px;max-width:420px;margin:0 auto;width:100%}
+.typed input{flex:1;min-width:0;font:inherit;font-weight:800;font-size:1.7rem;text-align:center;padding:8px;border-radius:16px;border:3px solid var(--line);background:var(--panel);color:var(--ink)}
+.typed .btn{font-size:1.2rem;padding:8px 22px}
+#game .msg{min-height:1.5em;text-align:center;font-weight:800;margin-top:6px}
+.over{position:fixed;inset:0;background:rgba(10,8,30,.72);display:none;place-items:center;padding:20px;z-index:8}
+.over .box{background:var(--panel);border:4px solid var(--acc);border-radius:24px;padding:20px 28px;text-align:center;max-width:380px}
+.over .big{font-size:4.5rem;line-height:1}
+.over h1{margin:6px 0;font-size:2.6rem;font-weight:800}
+.over .btn{width:100%;margin-top:8px;padding:10px}
+.over .btn.ghost{padding:8px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<button class="ic mutebtn" aria-label="Bật hoặc tắt âm thanh">🔊</button>
+
+<div id="splash">
+  <div class="banner"><h1>Toán chiến binh</h1><p>Trả lời đúng để đánh bại quái vật</p></div>
+  <div class="parade"><span id="splashHero">🧒</span><span>👹</span></div>
+  <button class="btn" id="start">Bắt đầu</button>
+  <p class="msg" id="menuMsg"></p>
+  <div class="set">
+    <h2>Nhân vật của bạn</h2>
+    <div class="hero-pick">
+      <div class="face big" id="menuAvatar">🧒</div>
+      <div>
+        <input type="file" id="file" accept="image/*" hidden>
+        <button class="btn ghost" id="pickBtn">Chọn ảnh từ máy</button>
+        <button class="btn ghost" id="resetImg">Hình mặc định</button>
+      </div>
+    </div>
+    <h2>Tên hai chiến binh</h2>
+    <div class="names">
+      <input id="nameH" maxlength="14" placeholder="Tên của bạn" autocomplete="off" aria-label="Tên của bạn">
+      <input id="nameE" maxlength="14" placeholder="Tên đối thủ" autocomplete="off" aria-label="Tên đối thủ">
+    </div>
+    <h2>Hình đối thủ</h2>
+    <div class="hero-pick">
+      <div class="face big" id="eMenu">❓</div>
+      <div style="flex:1;min-width:0">
+        <div class="chips" id="epick" style="margin-bottom:6px">
+          <button class="chip" data-e="👹" aria-pressed="false">👹</button>
+          <button class="chip" data-e="🐲" aria-pressed="false">🐲</button>
+          <button class="chip" data-e="👾" aria-pressed="false">👾</button>
+          <button class="chip" data-e="🧟" aria-pressed="false">🧟</button>
+          <button class="chip" data-e="🦖" aria-pressed="false">🦖</button>
+          <button class="chip" data-e="🐙" aria-pressed="false">🐙</button>
+        </div>
+        <input type="file" id="efile" accept="image/*" hidden>
+        <button class="btn ghost" id="epickBtn">Chọn ảnh từ máy</button>
+        <button class="btn ghost" id="eReset">Ngẫu nhiên</button>
+      </div>
+    </div>
+    <h2>Kiểu câu hỏi</h2>
+    <div class="chips" id="qtype">
+      <button class="chip" data-q="single" aria-pressed="false">Từng phép tính riêng</button>
+      <button class="chip" data-q="mixed" aria-pressed="false">Tổng hợp (2 phép trong 1 câu)</button>
+    </div>
+    <h2>Phép tính (chọn một hoặc nhiều)</h2>
+    <div class="chips" id="ops">
+      <button class="chip" data-op="+" aria-pressed="false">+ Cộng</button>
+      <button class="chip" data-op="-" aria-pressed="false">− Trừ</button>
+      <button class="chip" data-op="*" aria-pressed="false">× Nhân</button>
+      <button class="chip" data-op="/" aria-pressed="false">÷ Chia</button>
+    </div>
+    <h2>Loại số (chọn một hoặc cả hai)</h2>
+    <div class="chips" id="digits">
+      <button class="chip" data-d="d1" aria-pressed="false">Số từ 0 đến 9</button>
+      <button class="chip" data-d="d2" aria-pressed="false">Số 2 chữ số</button>
+    </div>
+    <h2>Bảng cửu chương (nhân, chia với số 0 đến 9)</h2>
+    <div class="chips" id="tables"></div>
+    <h2>Cách trả lời</h2>
+    <div class="chips" id="mode">
+      <button class="chip" data-m="choice" aria-pressed="false">Chọn A B C D</button>
+      <button class="chip" data-m="type" aria-pressed="false">Tự nhập đáp án</button>
+    </div>
+    <h2>Máu mỗi bên</h2>
+    <div class="chips" id="hpset">
+      <button class="chip" data-h="5" aria-pressed="false">5</button>
+      <button class="chip" data-h="10" aria-pressed="false">10</button>
+      <button class="chip" data-h="15" aria-pressed="false">15</button>
+      <button class="chip" data-h="20" aria-pressed="false">20</button>
+      <button class="chip" data-h="25" aria-pressed="false">25</button>
+      <button class="chip" data-h="30" aria-pressed="false">30</button>
+      <button class="chip" data-h="35" aria-pressed="false">35</button>
+      <button class="chip" data-h="40" aria-pressed="false">40</button>
+      <button class="chip" data-h="45" aria-pressed="false">45</button>
+      <button class="chip" data-h="50" aria-pressed="false">50</button>
+    </div>
+    <h2>Thời gian mỗi câu hỏi (giây)</h2>
+    <div class="names">
+      <input id="tlim" type="number" inputmode="numeric" min="0" max="999" placeholder="Nhập số giây, 0 = không tính giờ" aria-label="Thời gian mỗi câu hỏi, 0 là không tính giờ">
+    </div>
+  </div>
+</div>
+
+<div id="game">
+  <div class="top">
+    <div class="side"><div class="face" id="gameAvatar">🧒</div><div class="hpw"><b class="nm" id="heroName"></b><div class="bar"><i id="heroBar"></i></div><span id="heroN"></span></div></div>
+    <div class="ctrl">
+      <button class="ic" id="home" aria-label="Về menu">🏠</button>
+      <button class="ic" id="full" aria-label="Toàn màn hình">⛶</button>
+      <button class="ic mutebtn2" aria-label="Bật hoặc tắt âm thanh">🔊</button>
+    </div>
+    <div class="side r"><div class="face" id="enemyFace">👹</div><div class="hpw"><b class="nm" id="enemyName"></b><div class="bar e"><i id="enemyBar"></i></div><span id="enemyN"></span></div></div>
+  </div>
+  <div class="qbox" id="question"></div>
+  <div class="tmr" id="tmr"><i id="tmrBar"></i><span id="tmrN"></span></div>
+  <div class="arena" id="arena">
+    <div class="fighter" id="hero"><div class="face" id="heroFace">🧒</div><div class="dmg" id="dmgH"></div></div>
+    <div class="fighter" id="enemy"><span id="enemyEm">👹</span><div class="dmg" id="dmgE"></div></div>
+    <div class="slash" id="slash"></div>
+    <div class="pop" id="pop">-1</div>
+  </div>
+  <div class="opts" id="opts"></div>
+  <div class="typed" id="typed">
+    <input id="ans" type="number" inputmode="numeric" autocomplete="off" aria-label="Đáp án">
+    <button class="btn" id="send">Trả lời</button>
+  </div>
+  <div class="msg" id="msg"></div>
+</div>
+
+<div class="over" id="over"><div class="box">
+  <div class="big" id="overIcon"></div>
+  <h1 id="overTitle"></h1>
+  <p id="overText"></p>
+  <button class="btn" id="again">Chơi lại</button>
+  <button class="btn ghost" id="toMenu">Về menu</button>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const S={ops:new Set(),tables:new Set(),lv:new Set(),qt:'',mode:'',max:0,eEmoji:'',eImg:'',tl:0,hero:5,enemy:5,ans:0,lock:false,img:''};
+const ENEMIES=['👹','🐲','👾','🧟','🦖','🐙'];
+
+/* âm thanh */
+let AC=null,muted=false;
+try{muted=localStorage.getItem('mute')==='1'}catch(e){}
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC}
+function tone(f,t0,d,type,vol,f2){
+  const c=ac();if(!c||muted)return;
+  const o=c.createOscillator(),g=c.createGain(),s=c.currentTime+t0;
+  o.type=type||'sine';o.frequency.setValueAtTime(f,s);
+  if(f2)o.frequency.exponentialRampToValueAtTime(f2,s+d);
+  g.gain.setValueAtTime(vol||.2,s);g.gain.exponentialRampToValueAtTime(.001,s+d);
+  o.connect(g);g.connect(c.destination);o.start(s);o.stop(s+d+.02);
+}
+function noise(t0,d,vol){
+  const c=ac();if(!c||muted)return;
+  const n=Math.floor(c.sampleRate*d),b=c.createBuffer(1,n,c.sampleRate),a=b.getChannelData(0);
+  for(let i=0;i<n;i++)a[i]=(Math.random()*2-1)*(1-i/n);
+  const s=c.createBufferSource(),g=c.createGain();s.buffer=b;g.gain.value=vol;
+  s.connect(g);g.connect(c.destination);s.start(c.currentTime+t0);
+}
+const SFX={
+  click:()=>tone(660,0,.06,'square',.07),
+  ok:()=>{tone(523,0,.12,'triangle',.25);tone(784,.1,.2,'triangle',.25)},
+  swing:()=>tone(900,0,.2,'sawtooth',.1,200),
+  hit:()=>{noise(0,.22,.3);tone(220,0,.22,'square',.18,60)},
+  bad:()=>{tone(260,0,.15,'sawtooth',.18);tone(170,.14,.3,'sawtooth',.18)},
+  hurt:()=>{noise(0,.18,.25);tone(150,0,.2,'square',.15,50)},
+  win:()=>[523,659,784,1047,1319].forEach((f,i)=>tone(f,i*.14,.3,'triangle',.25)),
+  lose:()=>[392,330,262,196].forEach((f,i)=>tone(f,i*.22,.35,'sine',.25))
+};
+function paintMute(){document.querySelectorAll('.mutebtn,.mutebtn2').forEach(b=>b.textContent=muted?'🔇':'🔊')}
+document.querySelectorAll('.mutebtn,.mutebtn2').forEach(b=>b.onclick=()=>{muted=!muted;try{localStorage.setItem('mute',muted?'1':'0')}catch(e){}paintMute();SFX.click()});
+paintMute();
+
+/* nhạc nền: vòng lặp 32 nhịp, tự tạo bằng WebAudio */
+const BG={timer:null,next:0,step:0,bass:[110,87.31,130.81,98],arp:[[440,523,659,523],[349,440,523,440],[523,659,784,659],[392,494,587,494]]};
+function bgmStep(t){
+  t=Math.max(0,t);
+  const i=BG.step%32,ch=Math.floor(i/8)%4;
+  tone(BG.arp[ch][i%4],t,.16,'triangle',.05);
+  if(i%2===0)tone(BG.bass[ch],t,.3,'square',.06);
+  else noise(t,.04,.03);
+  if(i%8===0)tone(BG.arp[ch][2]*2,t,.25,'sine',.03);
+}
+function bgmStop(){if(BG.timer){clearInterval(BG.timer);BG.timer=null}}
+function bgmStart(){
+  bgmStop();const c=ac();if(!c)return;
+  BG.next=c.currentTime+.1;BG.step=0;
+  BG.timer=setInterval(()=>{
+    const k=ac();if(!k)return;
+    while(BG.next<k.currentTime+.4){bgmStep(BG.next-k.currentTime);BG.next+=.19;BG.step++}
+  },100);
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)bgmStop();
+  else if($('game').style.display==='flex'&&$('over').style.display!=='grid')bgmStart();
+});
+
+/* ảnh nhân vật */
+try{const s=localStorage.getItem('heroImg');if(s)S.img=s}catch(e){}
+function paintAvatar(){
+  ['menuAvatar','gameAvatar','heroFace'].forEach(id=>{
+    const el=$(id);
+    if(S.img){el.style.backgroundImage='url("'+S.img+'")';el.textContent=''}
+    else{el.style.backgroundImage='none';el.textContent='🧒'}
+  });
+  const sh=$('splashHero');
+  sh.innerHTML=S.img?'<span class="face big" style="width:clamp(80px,22vw,120px);height:clamp(80px,22vw,120px);background-image:url(\''+S.img+'\')"></span>':'🧒';
+}
+$('pickBtn').onclick=()=>$('file').click();
+$('file').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    const im=new Image();
+    im.onload=()=>{
+      const c=document.createElement('canvas');c.width=c.height=240;
+      const x=c.getContext('2d'),m=Math.min(im.width,im.height);
+      x.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,240,240);
+      S.img=c.toDataURL('image/jpeg',.85);
+      try{localStorage.setItem('heroImg',S.img)}catch(e){}
+      paintAvatar();
+    };
+    im.src=r.result;
+  };
+  r.readAsDataURL(f);
+};
+$('resetImg').onclick=()=>{S.img='';try{localStorage.removeItem('heroImg')}catch(e){}paintAvatar()};
+
+/* menu */
+const tb=$('tables');
+for(let i=0;i<=9;i++){const b=document.createElement('button');b.className='chip';b.dataset.t=i;b.textContent=i;b.setAttribute('aria-pressed',S.tables.has(i)?'true':'false');tb.appendChild(b)}
+function toggleSet(box,key,set,conv){
+  box.addEventListener('click',e=>{
+    const b=e.target.closest('.chip');if(!b)return;
+    const v=conv(b.dataset[key]);
+    if(set.has(v)){set.delete(v);b.setAttribute('aria-pressed','false')}else{set.add(v);b.setAttribute('aria-pressed','true')}
+  });
+}
+toggleSet($('ops'),'op',S.ops,v=>v);
+toggleSet(tb,'t',S.tables,Number);
+function single(box,key,fn){
+  box.addEventListener('click',e=>{
+    const b=e.target.closest('.chip');if(!b)return;
+    box.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');fn(b.dataset[key]);
+  });
+}
+single($('mode'),'m',v=>S.mode=v);
+toggleSet($('digits'),'d',S.lv,v=>v);
+single($('qtype'),'q',v=>S.qt=v);
+
+/* hình đối thủ */
+try{S.eImg=localStorage.getItem('enemyImg')||''}catch(e){}
+function paintEMenu(){
+  const f=$('eMenu');
+  if(S.eImg){f.style.backgroundImage='url("'+S.eImg+'")';f.textContent=''}
+  else{f.style.backgroundImage='none';f.textContent=S.eEmoji||'❓'}
+}
+function cropTo(file,cb){
+  const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{
+    const c=document.createElement('canvas');c.width=c.height=240;
+    const x=c.getContext('2d'),m=Math.min(im.width,im.height);
+    x.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,240,240);
+    cb(c.toDataURL('image/jpeg',.85));
+  };im.src=r.result};
+  r.readAsDataURL(file);
+}
+single($('epick'),'e',v=>{S.eEmoji=v;S.eImg='';try{localStorage.removeItem('enemyImg')}catch(e){}paintEMenu()});
+$('epickBtn').onclick=()=>$('efile').click();
+$('efile').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  cropTo(f,d=>{
+    S.eImg=d;S.eEmoji='';
+    try{localStorage.setItem('enemyImg',d)}catch(x){}
+    $('epick').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+    paintEMenu();
+  });
+};
+$('eReset').onclick=()=>{
+  S.eEmoji='';S.eImg='';try{localStorage.removeItem('enemyImg')}catch(e){}
+  $('epick').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+  paintEMenu();
+};
+function paintEnemy(em){
+  const f=$('enemyFace'),e=$('enemyEm');
+  if(S.eImg){
+    f.style.backgroundImage='url("'+S.eImg+'")';f.textContent='';
+    e.innerHTML='<span class="face" style="background-image:url(\''+S.eImg+'\')"></span>';
+  }else{f.style.backgroundImage='none';f.textContent=em;e.textContent=em}
+}
+paintEMenu();
+
+/* đồng hồ mỗi câu */
+let TM=null;
+function stopTimer(){if(TM){clearInterval(TM);TM=null}}
+function startTimer(){
+  stopTimer();
+  const box=$('tmr');
+  if(!S.tl){box.style.display='none';return}
+  box.style.display='block';
+  const end=Date.now()+S.tl*1000;
+  const tick=()=>{
+    const left=Math.max(0,end-Date.now());
+    $('tmrBar').style.width=left/(S.tl*1000)*100+'%';
+    $('tmrN').textContent=Math.ceil(left/1000)+' giây';
+    box.classList.toggle('low',left<=S.tl*300);
+    if(left<=0){stopTimer();answer(0,null,true)}
+  };
+  tick();TM=setInterval(tick,100);
+}
+single($('hpset'),'h',v=>S.max=+v);
+document.addEventListener('click',e=>{if(e.target.closest('.chip'))SFX.click()});
+
+/* câu hỏi */
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[rnd(0,a.length-1)];
+const SYM={'+':'+','-':'−','*':'×','/':'÷'};
+function single1(op,lv){
+  let a,b,ans;
+  if(lv==='d1'){
+    const ts=[...S.tables];
+    if(op==='+'){a=rnd(0,9);b=rnd(0,9);ans=a+b}
+    else if(op==='-'){a=rnd(0,9);b=rnd(0,a);ans=a-b}
+    else if(op==='*'){const t=ts.length?pick(ts):rnd(0,9);b=rnd(0,9);a=t;if(Math.random()<.5){a=b;b=t}ans=a*b}
+    else{const ds=ts.filter(x=>x>0),d=ds.length?pick(ds):rnd(1,9),q=rnd(0,9);a=d*q;b=d;ans=q}
+  }else{
+    if(op==='+'){a=rnd(10,99);b=rnd(10,99);ans=a+b}
+    else if(op==='-'){a=rnd(10,99);b=rnd(10,a);ans=a-b}
+    else if(op==='*'){a=rnd(10,99);b=rnd(2,9);if(Math.random()<.5){const t=a;a=b;b=t}ans=a*b}
+    else{const d=rnd(2,9),q=rnd(Math.ceil(10/d),Math.floor(99/d));a=d*q;b=d;ans=q}
+  }
+  return{text:a+' '+SYM[op]+' '+b,ans};
+}
+function evalX(n,o){
+  const nn=[n[0]],oo=[];
+  for(let i=0;i<o.length;i++){
+    if(o[i]==='*')nn[nn.length-1]*=n[i+1];
+    else if(o[i]==='/'){const d=n[i+1],x=nn[nn.length-1];if(d===0||x%d!==0)return null;nn[nn.length-1]=x/d}
+    else{nn.push(n[i+1]);oo.push(o[i])}
+  }
+  if(nn.some(v=>v>999))return null;
+  let r=nn[0];
+  for(let i=0;i<oo.length;i++){r=oo[i]==='+'?r+nn[i+1]:r-nn[i+1];if(r<0)return null}
+  return r;
+}
+function mixedQ(){
+  const ops=[...S.ops],lvs=[...S.lv];
+  for(let k=0;k<300;k++){
+    const o=[pick(ops),pick(ops)];
+    if(ops.length>1&&o[0]===o[1]&&k<150)continue;
+    const n=[];
+    for(let i=0;i<3;i++){
+      const lv=pick(lvs);
+      n.push(i>0&&o[i-1]==='/'?rnd(1,9):(lv==='d1'?rnd(0,9):rnd(10,99)));
+    }
+    const r=evalX(n,o);
+    if(r===null||r>999)continue;
+    return{text:n[0]+' '+SYM[o[0]]+' '+n[1]+' '+SYM[o[1]]+' '+n[2],ans:r};
+  }
+  return null;
+}
+function makeQ(){
+  if(S.qt==='mixed'){const q=mixedQ();if(q)return q}
+  return single1(pick([...S.ops]),pick([...S.lv]));
+}
+function choices(ans){
+  const s=new Set([ans]);
+  while(s.size<4){
+    let d=pick([1,2,3,4,5,10,-1,-2,-3,-5,-10]);
+    if(Math.random()<.3)d=pick([-1,1])*rnd(1,Math.max(2,Math.round(ans*.3)));
+    const v=ans+d;if(v>=0)s.add(v);
+  }
+  return [...s].sort(()=>Math.random()-.5);
+}
+function ask(){
+  const q=makeQ();S.ans=q.ans;S.lock=false;startTimer();
+  $('question').textContent=q.text+' = ?';
+  $('msg').textContent='';
+  if(S.mode==='choice'){
+    $('typed').style.display='none';
+    const box=$('opts');box.style.display='grid';box.innerHTML='';
+    choices(q.ans).forEach((v,i)=>{
+      const b=document.createElement('button');b.className='opt';
+      b.innerHTML='<small>'+'ABCD'[i]+'</small><span>'+v+'</span>';
+      b.onclick=()=>answer(v,b);box.appendChild(b);
+    });
+  }else{
+    $('opts').style.display='none';$('typed').style.display='flex';
+    $('ans').value='';$('ans').focus();
+  }
+}
+
+/* trận đấu */
+/* vết thương càng nặng khi máu càng mất nhiều */
+function dmg(id,hp){
+  const box=$(id),lost=S.max-hp;
+  const lv=lost<=0?0:Math.min(4,Math.max(1,Math.ceil(lost/S.max*4)));
+  if(box.dataset.lv==lv)return;
+  box.dataset.lv=lv;
+  const m=['<i class="m red"></i>','<i class="m pur"></i><i class="m bump"></i>','<i class="m eye l"></i><i class="m plas"></i>','<i class="m eye r"></i><i class="m swell"></i><i class="m stars">💫</i>'];
+  box.innerHTML=m.slice(0,lv).join('');
+  box.className='dmg l'+lv;
+}
+function hearts(){
+  $('heroBar').style.width=S.hero/S.max*100+'%';
+  $('enemyBar').style.width=S.enemy/S.max*100+'%';
+  $('heroN').textContent='❤ '+S.hero+'/'+S.max;
+  $('enemyN').textContent='❤ '+S.enemy+'/'+S.max;
+  dmg('dmgH',S.hero);dmg('dmgE',S.enemy);
+}
+function flash(el,cls,ms){el.classList.add(cls);setTimeout(()=>el.classList.remove(cls),ms)}
+function spot(el,box){
+  const a=$('arena').getBoundingClientRect(),r=el.getBoundingClientRect();
+  box.style.left=(r.left-a.left+r.width/2)+'px';box.style.top=(r.top-a.top+r.height*.25)+'px';
+}
+function pop(el){const p=$('pop');spot(el,p);p.classList.remove('go');void p.offsetWidth;p.classList.add('go')}
+function slashAt(el){
+  const s=$('slash');spot(el,s);s.style.marginLeft='-50px';
+  s.classList.remove('go');void s.offsetWidth;s.classList.add('go');
+}
+function lunge(who){
+  const h=$('hero').getBoundingClientRect(),e=$('enemy').getBoundingClientRect();
+  const d=Math.max(40,e.left-h.right+h.width*.3);
+  $(who).style.setProperty('--dx',(who==='hero'?d:-d)+'px');
+}
+function answer(v,btn,forced){
+  if(S.lock)return;
+  if(!forced&&S.mode==='type'&&(v===''||isNaN(v)))return;
+  S.lock=true;stopTimer();
+  const ok=!forced&&Number(v)===S.ans;
+  if(btn)btn.classList.add(ok?'ok':'bad');
+  if(!ok&&S.mode==='choice')[...$('opts').children].forEach(b=>{if(b.lastChild.textContent==S.ans)b.classList.add('ok')});
+  if(ok){
+    S.enemy--;$('msg').textContent='Đúng rồi! '+S.nh+' tấn công!';$('msg').style.color='var(--ok)';
+    lunge('hero');$('hero').classList.add('atk');SFX.ok();setTimeout(SFX.swing,120);
+    setTimeout(()=>{slashAt($('enemy'));flash($('enemy'),'hit',400);SFX.hit();pop($('enemy'));hearts()},300);
+    setTimeout(()=>$('hero').classList.remove('atk'),600);
+  }else{
+    S.hero--;SFX.bad();$('msg').textContent=(forced?'Hết giờ! Đáp án là ':'Sai rồi, đáp án là ')+S.ans+'. '+S.ne+' phản công!';$('msg').style.color='var(--bad)';
+    lunge('enemy');$('enemy').classList.add('atk');setTimeout(SFX.swing,120);
+    setTimeout(()=>{slashAt($('hero'));flash($('hero'),'hit',400);SFX.hurt();pop($('hero'));hearts()},300);
+    setTimeout(()=>$('enemy').classList.remove('atk'),600);
+  }
+  setTimeout(()=>{
+    if(S.enemy<=0)return end(true);
+    if(S.hero<=0)return end(false);
+    ask();
+  },1150);
+}
+$('send').onclick=()=>answer($('ans').value);
+$('ans').addEventListener('keydown',e=>{if(e.key==='Enter')answer($('ans').value)});
+
+function end(win){
+  $(win?'enemy':'hero').classList.add('dead');
+  bgmStop();stopTimer();win?SFX.win():SFX.lose();
+  $('overIcon').textContent=win?'🏆':'💤';
+  $('overTitle').textContent=win?'Victory!':'Thua rồi!';
+  $('overText').textContent=win?S.nh+' đã đánh bại '+S.ne+'.':S.ne+' đã thắng, thử lại nhé.';
+  $('over').style.display='grid';
+}
+function startGame(){
+  ac();
+  const miss=[];
+  if(!S.qt)miss.push('kiểu câu hỏi');
+  if(!S.ops.size)miss.push('phép tính');
+  if(!S.lv.size)miss.push('loại số');
+  if(S.lv.has('d1')&&(S.ops.has('*')||S.ops.has('/'))&&!S.tables.size)miss.push('bảng cửu chương');
+  if(!S.mode)miss.push('cách trả lời');
+  if(!S.max)miss.push('số máu');
+  if(miss.length){$('menuMsg').textContent='Bạn chưa chọn: '+miss.join(', ')+'.';return}
+  $('menuMsg').textContent='';
+  S.nh=($('nameH').value||'').trim()||'Bạn';S.ne=($('nameE').value||'').trim()||'Quái vật';
+  try{localStorage.setItem('nameH',$('nameH').value);localStorage.setItem('nameE',$('nameE').value)}catch(e){}
+  $('heroName').textContent=S.nh;$('enemyName').textContent=S.ne;
+  S.tl=Math.max(0,Math.min(999,Math.floor(Number($('tlim').value)||0)));
+  bgmStart();S.hero=S.enemy=S.max;
+  paintEnemy(S.eEmoji||pick(ENEMIES));
+  ['hero','enemy'].forEach(i=>$(i).className='fighter');
+  $('over').style.display='none';
+  $('splash').style.display='none';$('game').style.display='flex';
+  paintAvatar();hearts();ask();
+}
+function toMenu(){bgmStop();stopTimer();$('over').style.display='none';$('game').style.display='none';$('splash').style.display='flex'}
+try{$('nameH').value=localStorage.getItem('nameH')||'';$('nameE').value=localStorage.getItem('nameE')||''}catch(e){}
+$('start').onclick=startGame;$('again').onclick=startGame;
+$('toMenu').onclick=toMenu;$('home').onclick=toMenu;
+$('full').onclick=()=>{
+  try{
+    if(document.fullscreenElement)document.exitFullscreen();
+    else document.documentElement.requestFullscreen();
+  }catch(e){}
+};
+paintAvatar();
+</script>
+</body>
+</html>
